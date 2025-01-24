@@ -1,0 +1,139 @@
+version: '0.1.0'
+metadata:
+  flow_type: 'compound'
+  name: 'create-agent-flow'
+  description: 'An agent that creates other agents based on user input'
+  author: 'joy04'
+  tags: ['agent-creation', 'dynamic-agents']
+  private: false
+
+dataset:
+  source: 'joy04/mira-docs'
+
+inputs:
+  task:
+    type: string
+    description: 'What task will the agent perform?'
+    required: true
+    example: 'Summarize news articles'
+  requirements:
+    type: string
+    description: 'What are the requirements for the agent?'
+    required: true
+    example: 'Fast processing, high accuracy, ability to handle multiple languages'
+  preferences:
+    type: string
+    description: 'What are the preferences for the agent?'
+    required: false
+    example: 'Focus on readability and concise summaries, avoid overly technical jargon'
+
+workflow:
+  agent_creation_flow:
+    type: 'custom'
+    inputs:
+      task: ${inputs.task}
+      requirements: ${inputs.requirements}
+      preferences: ${inputs.preferences}
+    model:
+      provider: 'anthropic'
+      name: 'claude-3.5-sonnet'
+    prompt: |
+      Create a YAML configuration for the compound flow of an agent that performs the following task: {task}.
+      The agent must meet these requirements: {requirements}.
+      Preferences include: {preferences}.
+      Note: Always validate if the dependency is correct for each flow.
+      Provide the full configuration in the following YAML format:
+
+      # Flow specification version
+      version: "0.1.0"                                    # Flow specification version
+
+      metadata:
+        flow_type: "compound"                             # Specifies this as a compound flow
+        name: "your-flow-name"                            # Unique identifier
+        description: "Describe what this compound flow accomplishes"
+        author: "your-username"                           # Your Mira Flows username
+        tags: [tag1, tag2, tag3]                         # Discovery keywords
+        private: true                                     # Access control setting
+
+      inputs:
+        prime_input_1:                                    # Primary input parameter
+          type: string
+          description: "What is this input used for"
+          required: true
+          example: "Example value"
+        prime_input_2:                                    # Secondary input parameter
+          type: string
+          description: "Description of this input"
+          required: false
+          example: "Example"
+
+      workflow:
+        # Elemental Flow stage - starts immediately
+        first_flow:                                       # First processing stage
+          type: "elemental"
+          flow_name: "john_doe/first_elemental_flow"
+          inputs:
+            abc: ${{inputs.prime_input_1}}
+            xyz: ${{inputs.prime_input_2}}
+
+        # Custom processing stage - starts immediately (parallel to first_flow)
+        second_flow:                                      # Parallel processing stage
+          type: "custom"
+          inputs:
+            input1: ${{inputs.prime_input_1}}
+          model:
+            provider: "provider-name"                     # e.g., anthropic, openai, meta, etc.
+            name: "model-name"                            # Specific model identifier
+          prompt: |
+            Your flow's primary instruction or role...
+            You can use {{input1}} placeholders to reference inputs.
+
+        # Waits for both first_flow and second_flow to complete
+        third_flow:                                       
+          type: "custom"
+          depends_on: [first_flow, second_flow]  # Dependent on fist_flow and second_flow
+          inputs:
+            input1: ${{first_flow.output}} # uses output of first_flow as input
+            input2: ${{second_flow.output}} # uses output of second_flow as input
+          model:
+            provider: "provider-name"
+            name: "model-name"
+          dataset:
+            source: "author_name/dataset_name"
+          prompt: |
+            Your flow's primary instruction or role...
+            You can use {{input1}} and {{input2}} placeholders to reference inputs.
+
+      output:
+        value:                                           # Combine & customise outputs in order
+          - ${{first_flow.output}}
+          - ${{second_flow.output}}
+          - ${{third_flow.output}}
+
+      readme: |
+        This is a detailed explanation of what your flow does.
+
+        ### Workflow Overview:
+        1. **First Flow**: Executes `john_doe/first_elemental_flow` with the provided inputs
+        2. **Second Flow**: Runs in parallel with first flow
+        3. **Third Flow**: Depends on both previous flows, executes after they complete
+
+        ### Outputs:
+        - Combined outputs from all flows are returned in order
+
+output:
+  value:
+    - ${agent_creation_flow.output}
+
+readme: |
+  This flow creates an agent configuration based on the user's provided task, requirements, and preferences. The flow will ask the selected LLM model to generate the agent's full configuration in YAML format.
+
+  ### Workflow Overview:
+  1. **Agent Creation Flow:** The agent configuration is generated based on user inputs.
+
+  ### Outputs:
+   - The agent configuration in YAML format (produced by the LLM)
+
+  ### Important Notes:
+    - The output of this flow is a *configuration*. It does not actually create a live or running agent.
+    - The generated YAML will have keys for "task", "requirements", "preferences", and "additional_features" from user inputs.

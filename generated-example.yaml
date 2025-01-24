@@ -1,0 +1,64 @@
+# Version format ex. "0.0.1"
+version: '0.1.0' # Flow specification version
+
+# Basic metadata for the agent
+metadata:
+  name: 'multilingual-news-summarizer'
+  description: 'An agent that summarizes news articles in multiple languages with high accuracy and readability'
+  author: 'ai-assistant'
+  tags: [news, summarization, multilingual, fast, accurate]
+  private: false
+
+# Define the input variables required
+inputs:
+  article_text:
+    type: string
+    description: 'The full text of the news article to be summarized'
+    required: true
+    example: 'In a groundbreaking discovery, scientists have identified a new species of deep-sea creature...'
+  target_language:
+    type: string
+    description: 'The language in which the summary should be provided (use ISO 639-1 code)'
+    required: true
+    example: 'en'
+
+# LLM configuration
+model:
+  provider: 'anthropic'
+  name: 'claude-3.5-sonnet'
+
+# Prompt template configuration
+prompt: |
+  You are a highly efficient and accurate news summarizer. Your task is to summarize the given news article concisely while maintaining readability and avoiding technical jargon. Focus on the key points and ensure the summary is easy to understand.
+
+  Article to summarize:
+  {article_text}
+
+  Please provide a concise summary of the above article in the {target_language} language. The summary should be approximately 3-4 sentences long.
+
+  Remember:
+  1. Capture the main points of the article.
+  2. Use clear and simple language.
+  3. Avoid technical jargon unless absolutely necessary.
+  4. Ensure the summary is coherent and easy to read.
+  5. Maintain factual accuracy.
+
+# ReadME configuration
+readme: |
+  # Multilingual News Summarizer
+
+  This flow provides a fast and accurate way to summarize news articles in multiple languages. It focuses on creating concise, readable summaries while avoiding overly technical jargon.
+
+  ## Features
+  - Fast processing of news articles
+  - High accuracy in summarization
+  - Support for multiple languages
+  - Emphasis on readability and conciseness
+
+  ## How to use
+  1. Input the full text of the news article you want to summarize in the `article_text` field.
+  2. Specify the desired language for the summary using the ISO 639-1 code in the `target_language` field (e.g., "en" for English, "es" for Spanish, "fr" for French).
+  3. Run the flow to get a concise, easy-to-read summary of the news article in the specified language.
+
+  ## Note
+  This summarizer is designed to handle various types of news articles and produce summaries that capture the essence of the original text while being accessible to a wide audience. It's particularly useful for quickly understanding the key points of news articles in different languages.
